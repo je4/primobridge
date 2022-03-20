@@ -26,21 +26,20 @@ type Server struct {
 	jwtAlg           []string
 	log              *logging.Logger
 	AddrExt          string
-	PrimoSourceData  string
-	PrimoDeepLink    string
-	BoxImagePath     string
+	primoSourceData  string
+	primoDeepLink    string
+	siteViewerLink   string
 	accessLog        io.Writer
 	templates        map[string]*template.Template
 	httpStaticServer http.Handler
 	templateFS       fs.FS
 	staticFS         fs.FS
+	mapper           PrimoMapper
 }
 
-func NewServer(service, addr, addrExt string,
-	primoSourceData, primoDeepLink string,
-	boxImagePath string,
-	staticFS fs.FS,
-	templateFS fs.FS,
+func NewServer(service, addr, addrExt, primoSourceData, primoDeepLink string,
+	staticFS, templateFS fs.FS,
+	mapper PrimoMapper,
 	log *logging.Logger,
 	accessLog io.Writer) (*Server, error) {
 	host, port, err := net.SplitHostPort(addr)
@@ -58,9 +57,8 @@ func NewServer(service, addr, addrExt string,
 		service:          service,
 		host:             host,
 		port:             port,
-		PrimoSourceData:  primoSourceData,
-		PrimoDeepLink:    primoDeepLink,
-		BoxImagePath:     boxImagePath,
+		primoSourceData:  primoSourceData,
+		primoDeepLink:    primoDeepLink,
 		staticFS:         staticFS,
 		httpStaticServer: http.FileServer(http.FS(staticFS)),
 		AddrExt:          strings.TrimRight(addrExt, "/"),
@@ -68,6 +66,7 @@ func NewServer(service, addr, addrExt string,
 		accessLog:        accessLog,
 		templateFS:       templateFS,
 		templates:        map[string]*template.Template{},
+		mapper:           mapper,
 	}
 
 	return srv, srv.InitTemplates()
@@ -101,6 +100,26 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 			"e", "{docID}",
 			"bcd", "{barcode}").
 		Name("qrcode")
+	router.HandleFunc("/static_images/projects/{project_id}/search_thumbnail.jpg", s.SearchThumbnailHandler).
+		Methods("GET").
+		Queries(
+			// "project_id", "{projectID}",
+			"search_key", "{searchKey}",
+			// "language", "{language}",
+			// "e", "{docID}",
+			// "bcd", "{barcode}"
+		).
+		Name("thumb")
+	router.HandleFunc("/viewer", s.ViewerHandler).
+		Methods("GET").
+		Queries(
+			// "project_id", "{projectID}",
+			"search_key", "{searchKey}",
+			// "language", "{language}",
+			"e", "{docID}",
+			"bcd", "{barcode}",
+		).
+		Name("viewer")
 	router.PathPrefix("/static").Handler(http.StripPrefix("/static", s.httpStaticServer)).Methods("GET")
 
 	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(router))

@@ -3,21 +3,24 @@ package bridge
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/skip2/go-qrcode"
 	"net/http"
-	"strings"
 )
 
 func (s *Server) SearchQRCodeHandler(w http.ResponseWriter, r *http.Request) {
 	var vars = mux.Vars(r)
-	var urlStr = strings.ReplaceAll(s.PrimoDeepLink, "{DOCID}", vars["docID"])
-	var png []byte
-	png, err := qrcode.Encode(urlStr, qrcode.Medium, 130)
+
+	var searchKey, docID, barcode string
+
+	searchKey = vars["searchKey"]
+	docID = vars["docID"]
+	barcode = vars["barcode"]
+
+	png, mime, err := s.mapper.GetBarcode(searchKey, docID, barcode)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf("cannot generate qr code: %v", err)))
+		w.Write([]byte(fmt.Sprintf("cannot generate barcode: %v", err)))
 		return
 	}
-	w.Header().Add("Content-type", "image/png")
+	w.Header().Set("Content-type", mime)
 	w.Write(png)
 }

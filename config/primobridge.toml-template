@@ -1,0 +1,23 @@
+#certpem = ""
+#keypem = ""
+#logfile = ""
+#loglevel = ""
+#logformat = ""
+#accesslog = ""
+#basedir = ""
+#staticdir = ""
+templatedir = "./web/template"
+addr = "localhost:85"
+addrext = "https://mediathek.hgk.fhnw.ch/nebis"
+
+primosourcedata = "https://slsp-fhnw.primo.exlibrisgroup.com/discovery/sourceRecord?vid=41SLSP_FNW:testfabiano&docId=alma{DOCID}&recordOwner=41SLSP_NETWORK"
+primodeeplink = "https://slsp-fhnw.primo.exlibrisgroup.com/discovery/fulldisplay?context=L&vid=41SLSP_FNW:testfabiano&search_scope=DN_and_CI&tab=41SLSP_FHNW_DN_and_CI&docid=alma{DOCID}"
+siteviewerlink = "https://slsp-fhnw.primo.exlibrisgroup.com/discovery/fulldisplay?context=L&vid=41SLSP_FNW:testfabiano&search_scope=DN_and_CI&tab=41SLSP_FHNW_DN_and_CI&docid=alma{DOCID}"
+#siteviewerlink = "https://mediathek.hgk.fhnw.ch/nebis/viewer?project_id=1&search_key={SIGNATURE}&language=de&e={DOCID}&bcd={BARCODE}"
+#boximagepath = "./web/static/3dthumb/jpg"
+
+[db]
+    #[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
+    dsn = "rfid:swordfish@tcp(localhost:3306)/rfid?parseTime=true"
+    connMaxTimeout = "4h"
+    schema = "rfid"

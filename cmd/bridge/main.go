@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/je4/primobridge/v2/pkg/bridge"
+	"github.com/je4/primobridge/v2/pkg/mediathek"
 	"github.com/je4/primobridge/v2/web"
 	lm "github.com/je4/utils/v2/pkg/logger"
 	"io"
@@ -15,9 +18,13 @@ import (
 	"time"
 )
 
+/*
+https://slsp-fhnw.primo.exlibrisgroup.com/discovery/fulldisplay?context=L&vid=41SLSP_FNW:testfabiano&search_scope=DN_and_CI&tab=41SLSP_FHNW_DN_and_CI&docid=alma990038750950205518
+*/
+
 func main() {
 	var err error
-	var configfile = flag.String("cfg", "/etc/tbbs.toml", "configuration file")
+	var configfile = flag.String("cfg", "/etc/primobridge.toml", "configuration file")
 
 	flag.Parse()
 
@@ -50,7 +57,7 @@ func main() {
 		accessLog = f
 	}
 
-	var staticFS, templateFS fs.FS
+	var staticFS, templateFS, boxImageFS fs.FS
 
 	if config.StaticDir == "" {
 		staticFS, err = fs.Sub(web.StaticFS, "static")
@@ -70,6 +77,35 @@ func main() {
 		templateFS = os.DirFS(config.TemplateDir)
 	}
 
+	if config.BoxImagePath == "" {
+		boxImageFS, err = fs.Sub(web.StaticFS, "static/3dthumb/jpg")
+		if err != nil {
+			logger.Panicf("cannot get subtree of embedded template: %v", err)
+		}
+	} else {
+		boxImageFS = os.DirFS(config.BoxImagePath)
+	}
+
+	var db *sql.DB
+	logger.Debugf("connecting mysql database")
+	db, err = sql.Open("mysql", config.DB.DSN)
+	if err != nil {
+		// don't write dsn in error message due to password inside
+		logger.Panicf("error connecting to database: %v", err)
+		return
+	}
+	defer db.Close()
+	if err := db.Ping(); err != nil {
+		logger.Panicf("cannot ping database: %v", err)
+		return
+	}
+	db.SetConnMaxLifetime(time.Duration(config.DB.ConnMaxTimeout.Duration))
+
+	mapper, err := mediathek.NewMediathekMapper(db, boxImageFS, config.SiteViewerLink, logger)
+	if err != nil {
+		logger.Panicf("cannot instianziate mapper: %v", err)
+	}
+
 	srv, err := bridge.NewServer(
 		"PrimoBridge",
 		config.Addr,
@@ -78,6 +114,7 @@ func main() {
 		config.PrimoDeepLink,
 		staticFS,
 		templateFS,
+		mapper,
 		logger,
 		accessLog,
 	)

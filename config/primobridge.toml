@@ -1,3 +1,0 @@
-primosourcedata = "https://slsp-fhnw.primo.exlibrisgroup.com/discovery/sourceRecord?vid=41SLSP_FNW:testfabiano&docId=alma{DOCID}&recordOwner=41SLSP_NETWORK"
-primodeeplink = "https://slsp-fhnw.primo.exlibrisgroup.com/discovery/fulldisplay?context=L&vid=41SLSP_FNW:testfabiano&search_scope=DN_and_CI&tab=41SLSP_FHNW_DN_and_CI&docid=alma{DOCID}"
-boximagepath = "./web/static/3dthumb/jpg"
