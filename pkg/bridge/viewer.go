@@ -18,8 +18,10 @@ func (s *Server) ViewerHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, _, box, err := s.mapper.GetData(searchKey)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf("cannot find box for %s", searchKey)))
+		box = "info"
+		//		w.WriteHeader(http.StatusInternalServerError)
+		//		w.Write([]byte(fmt.Sprintf("cannot find box for %s", searchKey)))
+		//		return
 	}
 
 	s.InitTemplates() // todo: remove this
