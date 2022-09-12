@@ -120,6 +120,9 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 			"bcd", "{barcode}",
 		).
 		Name("viewer")
+	router.HandleFunc("/kisten", s.KistenlisteHandler).
+		Methods("GET").
+		Name("kisten")
 	router.PathPrefix("/static").Handler(http.StripPrefix("/static", s.httpStaticServer)).Methods("GET")
 
 	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(router))

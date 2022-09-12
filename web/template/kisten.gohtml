@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    td {
+        vertical-align: top;
+        border: 2px solid black;
+    }
+</style>
+</head>
+<body>
+<table style="border-collapse: collapse;">
+    {{range $kiste, $rel := .Kisten}}
+    <tr>
+        <td>
+        {{$kiste}}
+        </td>
+        <td>
+            {{if (ne $rel.Img "")}}
+                <img src="{{$rel.Img}}" />
+            {{end}}
+        </td>
+        <td>
+            {{if (ne $rel.JSON "")}}
+                <textarea style="width: 350px; height: 160px;">{{$rel.JSON}}</textarea>
+
+            {{end}}
+        </td>
+    </tr>
+    {{end}}
+</table>
+</body>
+</html>
