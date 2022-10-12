@@ -54,7 +54,7 @@ func (s *Server) KistenlisteHandler(w http.ResponseWriter, r *http.Request) {
 	}{}
 	for regal, kiste := range kisteData {
 		for level, row := range kiste.Level {
-			for i := 1; i < row.Boxes; i++ {
+			for i := 1; i <= row.Boxes; i++ {
 				for _, k := range []string{
 					fmt.Sprintf("%s%d%02da", regal, level, i),
 					fmt.Sprintf("%s%d%02db", regal, level, i),

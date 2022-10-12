@@ -23,6 +23,16 @@ func (s *Server) ViewerHandler(w http.ResponseWriter, r *http.Request) {
 		//		w.Write([]byte(fmt.Sprintf("cannot find box for %s", searchKey)))
 		//		return
 	}
+	box = strings.ReplaceAll(box, "_", "")
+	systematik, err := s.mapper.GetSystematik(box)
+	if err != nil {
+		systematik = ""
+	}
+	hierarchy, err := s.mapper.GetSystematikHierarchy(systematik)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("cannot get systematik hierarchy: %v", err), http.StatusInternalServerError)
+		return
+	}
 
 	s.InitTemplates() // todo: remove this
 	tpl, ok := s.templates["viewer.gohtml"]
@@ -31,12 +41,15 @@ func (s *Server) ViewerHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("cannot find viewer.gohtml"))
 	}
 	if err := tpl.Execute(w, struct {
-		Signature, DocID, Barcode, Box string
+		Signature, DocID, Barcode, Box, Systematik string
+		Hierarchy                                  map[string]map[string]Class
 	}{
-		Signature: searchKey,
-		DocID:     docID,
-		Barcode:   barcode,
-		Box:       strings.ReplaceAll(box, "_", ""),
+		Signature:  searchKey,
+		DocID:      docID,
+		Barcode:    barcode,
+		Box:        box,
+		Systematik: systematik,
+		Hierarchy:  hierarchy,
 	}); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("cannot execute viewer.gohtml: %v", err)))

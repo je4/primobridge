@@ -2,8 +2,7 @@ package web
 
 import "embed"
 
-//go:embed template/kisten.gohtml
-//go:embed template/viewer.gohtml
+//go:embed template/*.gohtml
 var TemplateFS embed.FS
 
 //go:embed static/3dthumb/jpg/*

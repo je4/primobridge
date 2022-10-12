@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/bluele/gcache"
+	"github.com/je4/primobridge/v2/pkg/bridge"
 	"github.com/op/go-logging"
 	"github.com/pkg/errors"
 	"github.com/skip2/go-qrcode"
+	"golang.org/x/exp/slices"
 	"io"
 	"io/fs"
 	"net/url"
@@ -19,6 +21,9 @@ type MediathekMapper struct {
 	logger         *logging.Logger
 	boxImageFS     fs.FS
 	siteViewerLink string
+	boxClass       map[string]string
+	classLabel     map[string]bridge.Class
+	classes        []string
 }
 
 func NewMediathekMapper(db *sql.DB,
@@ -31,8 +36,100 @@ func NewMediathekMapper(db *sql.DB,
 		siteViewerLink: siteViewerLink,
 		logger:         logger,
 		cache:          gcache.New(500).LRU().Build(),
+		boxClass:       map[string]string{},
+		classLabel:     map[string]bridge.Class{},
+		classes:        []string{},
+	}
+	sqlstr := "SELECT box, class FROM box_class"
+	rows, err := db.Query(sqlstr)
+	if err != nil {
+		return nil, errors.Wrapf(err, "cannot load box and class from database %s", sqlstr)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var box, class string
+		if err := rows.Scan(&box, &class); err != nil {
+			return nil, errors.Wrapf(err, "cannot scan result values of %s", sqlstr)
+		}
+		pm.boxClass[box] = class
+	}
+	sqlstr = "SELECT class, label_de, label_en FROM class_label"
+	sqlstrLink := "SELECT `type`, `href`, `label` FROM class_link WHERE `class`=?"
+
+	rows2, err := db.Query(sqlstr)
+	if err != nil {
+		return nil, errors.Wrapf(err, "cannot load box and class from database %s", sqlstr)
+	}
+	defer rows2.Close()
+	for rows2.Next() {
+		var class, de, en string
+		if err := rows2.Scan(&class, &de, &en); err != nil {
+			return nil, errors.Wrapf(err, "cannot scan result values of %s", sqlstr)
+		}
+		cStruct := bridge.Class{DE: de, EN: en, Links: map[string][]bridge.Link{}}
+		if err := func() error {
+			rows, err := db.Query(sqlstrLink, class)
+			if err != nil {
+				return errors.Wrapf(err, "cannot load box and class from database %s", sqlstrLink)
+			}
+			defer rows.Close()
+			for rows.Next() {
+				var t, href, label string
+				if err := rows.Scan(&t, &href, &label); err != nil {
+					return errors.Wrapf(err, "cannot scan values of %s - [%s]", sqlstrLink, class)
+				}
+				if _, ok := cStruct.Links[t]; !ok {
+					cStruct.Links[t] = []bridge.Link{}
+				}
+				cStruct.Links[t] = append(cStruct.Links[t], bridge.Link{
+					Type:  t,
+					HRef:  href,
+					Label: label,
+				})
+			}
+			return nil
+		}(); err != nil {
+			return nil, err
+		}
+		pm.classLabel[class] = cStruct
+		pm.classes = append(pm.classes, class)
+		slices.Sort(pm.classes)
 	}
 	return pm, nil
+}
+
+func (mm *MediathekMapper) GetSystematikHierarchy(sys string) (map[string]map[string]bridge.Class, error) {
+	result := map[string]map[string]bridge.Class{}
+	if len(sys) < 5 {
+		return nil, errors.Errorf("%s is not a valid systematik", sys)
+	}
+	main := sys[0:2]
+	//sub := sys[3:5]
+	for _, c := range mm.classes {
+		cMain := c[0:2]
+		cSub := c[3:5]
+		if _, ok := result[cMain]; !ok {
+			result[cMain] = map[string]bridge.Class{}
+		}
+		if cMain == main || cSub == "00" {
+			/*
+				if _, ok := result[cMain][cSub]; !ok {
+					result[cMain][cSub] = bridge.Class{}
+				}
+			*/
+			result[cMain][cSub] = mm.classLabel[c]
+		}
+	}
+	return result, nil
+}
+
+func (mm *MediathekMapper) GetSystematik(box string) (sys string, err error) {
+	var ok bool
+	sys, ok = mm.boxClass[strings.ToLower(box)]
+	if !ok {
+		return "", errors.Errorf("cannot find systematik for box %s", box)
+	}
+	return
 }
 
 func (mm *MediathekMapper) GetData(signature string) (barcode string, docID string, box string, err error) {

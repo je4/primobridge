@@ -120,6 +120,12 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 			"bcd", "{barcode}",
 		).
 		Name("viewer")
+	router.HandleFunc("/3d", s.ThreeDHandler).
+		Methods("GET").
+		Queries(
+			"box", "{box}",
+		).
+		Name("3d")
 	router.HandleFunc("/kisten", s.KistenlisteHandler).
 		Methods("GET").
 		Name("kisten")
