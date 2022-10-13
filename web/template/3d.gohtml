@@ -39,7 +39,8 @@
 
     function init() {
         hash = window.location.hash.substring( 1 );
-        shelf = ['{{.Box}}'];
+
+        shelf = {{if eq .Box ""}}null{{else}}['{{.Box}}']{{end}};
 
         init3D( shelf );
         $("textarea").keyup(function(e) {

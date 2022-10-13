@@ -3,6 +3,7 @@ package bridge
 import (
 	"context"
 	"crypto/tls"
+	sprig "github.com/Masterminds/sprig/v3"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	dcert "github.com/je4/utils/v2/pkg/cert"
@@ -79,7 +80,7 @@ func (s *Server) InitTemplates() error {
 	}
 	for _, entry := range entries {
 		name := entry.Name()
-		tpl, err := template.ParseFS(s.templateFS, name)
+		tpl, err := template.New(name).Funcs(sprig.FuncMap()).ParseFS(s.templateFS, name)
 		if err != nil {
 			return errors.Wrapf(err, "cannot parse template: %s", name)
 		}
@@ -118,6 +119,12 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 			// "language", "{language}",
 			"e", "{docID}",
 			"bcd", "{barcode}",
+		).
+		Name("viewer")
+	router.HandleFunc("/viewer", s.SystematikHandler).
+		Methods("GET").
+		Queries(
+			"sys", "{systematik}",
 		).
 		Name("viewer")
 	router.HandleFunc("/3d", s.ThreeDHandler).
