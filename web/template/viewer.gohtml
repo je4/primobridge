@@ -1,11 +1,19 @@
-{{$links := (list)}}{{$systematik := .Systematik}}<!DOCTYPE html>
+{{$links := (list)}}{{$systematik := .Systematik}}{{$title := ""}}<!DOCTYPE html>
 <html lang="de">
 <head>
+    {{range $main, $subs := .Hierarchy}}
+        {{range $sub, $labels := $subs}}
+            {{$sys := (printf "%s-%s" $main $sub)}}
+            {{if eq $sys $systematik}}{{$links = $labels.Links}}{{end}}
+            {{if eq $sys $systematik}}{{$title = $labels.DE}}{{end}}
+        {{end}}
+    {{end}}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="static/fonts/roboto/roboto.css" rel="stylesheet">
     <link href="static/bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
     <link href="static/css/primobridge.css" rel="stylesheet">
+    <title>{{$title}} - Mediathek HGK</title>
 <style>
     body {
         font-family: Roboto, "Courier New", monospace;
@@ -17,7 +25,7 @@
 <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
     <header class="mb-auto">
         <div>
-            <h3 class="float-md-start mb-0">Mediathek HGK</h3>
+            <h3 class="float-md-start mb-0">Mediathek HGK FHNW</h3>
             <nav class="nav nav-masthead justify-content-center float-md-end">
                 <a class="nav-link fw-bold py-1 px-0" aria-current="page" href="https://mediathek.hgk.fhnw.ch">Home</a>
                 <a class="nav-link fw-bold py-1 px-0" href="https://mediathek.hgk.fhnw.ch/amp">Katalog</a>
@@ -25,22 +33,53 @@
         </div>
     </header>
     <main class="px-3">
-        <h1>Systematik</h1>
+        <h1>{{$title}}</h1>
         <!-- <p><img src="static/3dthumb/jpg/{{.Box}}.jpg" /></p> -->
-        <div class="row" data-masonry='{"percentPosition": true }'>
-            <div class="col-sm-6 col-lg-6 mb-4">
+        <!--
+        <div class="row">
+            <div class="col-sm-12 col-lg-12 mb-4">
                 <div class="card border border-white text-bg-dark mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">3D Modell</h5>
+                        <h5 class="card-title">da book</h5>
                         <p class="card-text" style="height: 18em;">
-                            <iframe style="width:100%;height:100%" src="3d?box={{.Box}}" scrolling="no"></iframe>
                         </p>
-                        <p class="card-text"><small class="text-muted">Navigate with mouse</small></p>
+                        <p class="card-text"><small class="text-muted">Signatur: {{.Signature}}</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        -->
+        <div class="row" data-masonry='{"percentPosition": true }'>
+            <div class="col-sd-12 col-md-8 col-lg-5 col-lg-4 mb-4">
+                <div class="card border border-white text-bg-dark mb-3">
+                    <img class="card-img-top" src="static/3dthumb/jpg/{{if ne .Box ""}}{{.Box}}{{else}}info{{end}}.jpg" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title">{{.Signature}}</h5>
                     </div>
                 </div>
             </div>
 
-            <div class="col-sm-6 col-lg-6 mb-4">
+            {{if gt (len $links) 0}}
+                <div class="col-sd-12 col-md-8 col-lg-5 col-lg-4 mb-4">
+                    <div class="card border border-white text-bg-dark mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Referenzen</h5>
+                            <p class="card-text">
+                                {{range $type, $tlinks := $links}}
+                                    <b>{{$type}}</b><br />
+                                    {{range $link := $tlinks}}
+                                        <span class="badge text-bg-secondary"><a href="{{$link.HRef}}" class="link-light" target="_blank">{{$link.Label}}</a></span>
+                                    {{end}}
+                                    <br />
+                                {{end}}
+                            </p>
+                            <p class="card-text"><small class="text-muted">Click to open</small></p>
+                        </div>
+                    </div>
+                </div>
+            {{end}}
+
+            <div class="col-sd-12 col-md-8 col-lg-5 col-lg-4 mb-4">
                 <div class="card border border-white text-bg-dark mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Themen</h5>
@@ -48,7 +87,6 @@
                             {{range $main, $subs := .Hierarchy}}
                                 {{range $sub, $labels := $subs}}
                                     {{$sys := (printf "%s-%s" $main $sub)}}
-                                    {{if eq $sys $systematik}}{{$links = $labels.Links}}{{end}}
                                     {{if eq $sub "00"}}
                                         <b><a class="text-decoration-none {{if eq $sys $systematik}}link-danger{{else}}link-light{{end}}" href="?sys={{$sys}}">{{ $labels.DE }}</a></b>
                                     {{else}}
@@ -62,26 +100,6 @@
                     </div>
                 </div>
             </div>
-
-            {{if gt (len $links) 0}}
-            <div class="col-sm-6 col-lg-6 mb-4">
-                <div class="card border border-white text-bg-dark mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Referenzen</h5>
-                        <p class="card-text">
-                            {{range $type, $tlinks := $links}}
-                                <b>{{$type}}</b><br />
-                                {{range $link := $tlinks}}
-                                    <span class="badge text-bg-secondary"><a href="{{$link.HRef}}" class="link-light" target="_blank">{{$link.Label}}</a></span>
-                                {{end}}
-                                <br />
-                            {{end}}
-                        </p>
-                        <p class="card-text"><small class="text-muted">Click to open</small></p>
-                    </div>
-                </div>
-            </div>
-            {{end}}
         </div>
     </main>
 
@@ -93,5 +111,16 @@
 <!-- <iframe src="3d?box={{.Box}}"></iframe>-->
 <script src="static/bootstrap/5.2.0/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
 <script src="static/js/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
+
+<script>
+    /*
+    var marcRequest = new XMLHttpRequest();
+    marcRequest.open('GET', 'https://fhnw.swisscovery.slsp.ch/discovery/sourceRecord?vid=41SLSP_FNW%3AVU1&docId=alma{{.DocID}}&recordOwner=41SLSP_NETWORK');
+    marcRequest.onload = function(){
+        console.log(marcRequest.responseText);
+    };
+    marcRequest.send();
+    */
+</script>
 </body>
 </html>

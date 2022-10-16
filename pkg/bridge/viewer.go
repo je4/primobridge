@@ -34,7 +34,9 @@ func (s *Server) ViewerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.InitTemplates() // todo: remove this
+	if s.dev {
+		s.InitTemplates()
+	}
 	tpl, ok := s.templates["viewer.gohtml"]
 	if !ok {
 		w.WriteHeader(http.StatusInternalServerError)

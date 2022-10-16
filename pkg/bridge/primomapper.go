@@ -14,4 +14,5 @@ type PrimoMapper interface {
 	GetData(signature string) (barcode string, docID string, box string, err error)
 	GetSystematik(box string) (string, error)
 	GetSystematikHierarchy(sys string) (map[string]map[string]Class, error)
+	Init() error
 }

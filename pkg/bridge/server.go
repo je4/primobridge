@@ -36,13 +36,10 @@ type Server struct {
 	templateFS       fs.FS
 	staticFS         fs.FS
 	mapper           PrimoMapper
+	dev              bool
 }
 
-func NewServer(service, addr, addrExt, primoSourceData, primoDeepLink string,
-	staticFS, templateFS fs.FS,
-	mapper PrimoMapper,
-	log *logging.Logger,
-	accessLog io.Writer) (*Server, error) {
+func NewServer(service, addr, addrExt, primoSourceData, primoDeepLink string, staticFS, templateFS fs.FS, mapper PrimoMapper, log *logging.Logger, accessLog io.Writer, dev bool) (*Server, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot split address %s", addr)
@@ -68,6 +65,7 @@ func NewServer(service, addr, addrExt, primoSourceData, primoDeepLink string,
 		templateFS:       templateFS,
 		templates:        map[string]*template.Template{},
 		mapper:           mapper,
+		dev:              dev,
 	}
 
 	return srv, srv.InitTemplates()
@@ -92,6 +90,8 @@ func (s *Server) InitTemplates() error {
 func (s *Server) ListenAndServe(cert, key string) (err error) {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/initmapper/hydmUN.DftakhLJDNT_5", s.InitMapperHandler).
+		Methods("GET")
 	router.HandleFunc("/static_images/projects/{project_id}/search_qrcode.png", s.SearchQRCodeHandler).
 		Methods("GET").
 		Queries(

@@ -35,7 +35,7 @@ var Mediathek3D = function( config, done ) {
 
 	this.boxData = null;
 	this.drawOnly = null;
-    this.boxDelay = 10;
+    this.boxDelay = 2;
 	
 	// overwrite with configuration 
 	for(var prop in config)   {

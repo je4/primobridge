@@ -42,7 +42,10 @@ func (s *Server) KistenlisteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.InitTemplates() // todo: remove this
+	if s.dev {
+		s.InitTemplates()
+	}
+
 	tpl, ok := s.templates["kisten.gohtml"]
 	if !ok {
 		w.WriteHeader(http.StatusInternalServerError)

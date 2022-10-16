@@ -26,6 +26,7 @@ https://slsp-fhnw.primo.exlibrisgroup.com/discovery/fulldisplay?context=L&vid=41
 func main() {
 	var err error
 	var configfile = flag.String("cfg", "/etc/primobridge.toml", "configuration file")
+	var dev = flag.Bool("dev", false, "template development mode")
 
 	flag.Parse()
 
@@ -118,6 +119,7 @@ func main() {
 		mapper,
 		logger,
 		accessLog,
+		*dev,
 	)
 	if err != nil {
 		logger.Panicf("cannot initialize server: %v", err)

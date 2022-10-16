@@ -13,9 +13,11 @@ import (
 	"io/fs"
 	"net/url"
 	"strings"
+	"sync"
 )
 
 type MediathekMapper struct {
+	sync.RWMutex
 	cache          gcache.Cache
 	db             *sql.DB
 	logger         *logging.Logger
@@ -30,7 +32,7 @@ func NewMediathekMapper(db *sql.DB,
 	boxImageFS fs.FS,
 	siteViewerLink string,
 	logger *logging.Logger) (*MediathekMapper, error) {
-	pm := &MediathekMapper{
+	mm := &MediathekMapper{
 		db:             db,
 		boxImageFS:     boxImageFS,
 		siteViewerLink: siteViewerLink,
@@ -40,35 +42,42 @@ func NewMediathekMapper(db *sql.DB,
 		classLabel:     map[string]bridge.Class{},
 		classes:        []string{},
 	}
+
+	return mm, mm.Init()
+}
+
+func (mm *MediathekMapper) Init() error {
+	mm.Lock()
+	defer mm.Unlock()
 	sqlstr := "SELECT box, class FROM box_class"
-	rows, err := db.Query(sqlstr)
+	rows, err := mm.db.Query(sqlstr)
 	if err != nil {
-		return nil, errors.Wrapf(err, "cannot load box and class from database %s", sqlstr)
+		return errors.Wrapf(err, "cannot load box and class from database %s", sqlstr)
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var box, class string
 		if err := rows.Scan(&box, &class); err != nil {
-			return nil, errors.Wrapf(err, "cannot scan result values of %s", sqlstr)
+			return errors.Wrapf(err, "cannot scan result values of %s", sqlstr)
 		}
-		pm.boxClass[box] = class
+		mm.boxClass[box] = class
 	}
 	sqlstr = "SELECT class, label_de, label_en FROM class_label"
 	sqlstrLink := "SELECT `type`, `href`, `label` FROM class_link WHERE `class`=?"
 
-	rows2, err := db.Query(sqlstr)
+	rows2, err := mm.db.Query(sqlstr)
 	if err != nil {
-		return nil, errors.Wrapf(err, "cannot load box and class from database %s", sqlstr)
+		return errors.Wrapf(err, "cannot load box and class from database %s", sqlstr)
 	}
 	defer rows2.Close()
 	for rows2.Next() {
 		var class, de, en string
 		if err := rows2.Scan(&class, &de, &en); err != nil {
-			return nil, errors.Wrapf(err, "cannot scan result values of %s", sqlstr)
+			return errors.Wrapf(err, "cannot scan result values of %s", sqlstr)
 		}
 		cStruct := bridge.Class{DE: de, EN: en, Links: map[string][]bridge.Link{}}
 		if err := func() error {
-			rows, err := db.Query(sqlstrLink, class)
+			rows, err := mm.db.Query(sqlstrLink, class)
 			if err != nil {
 				return errors.Wrapf(err, "cannot load box and class from database %s", sqlstrLink)
 			}
@@ -89,16 +98,18 @@ func NewMediathekMapper(db *sql.DB,
 			}
 			return nil
 		}(); err != nil {
-			return nil, err
+			return err
 		}
-		pm.classLabel[class] = cStruct
-		pm.classes = append(pm.classes, class)
-		slices.Sort(pm.classes)
+		mm.classLabel[class] = cStruct
+		mm.classes = append(mm.classes, class)
+		slices.Sort(mm.classes)
 	}
-	return pm, nil
+	return nil
 }
 
 func (mm *MediathekMapper) GetSystematikHierarchy(sys string) (map[string]map[string]bridge.Class, error) {
+	mm.RLock()
+	defer mm.RUnlock()
 	result := map[string]map[string]bridge.Class{}
 	if len(sys) < 5 {
 		return nil, errors.Errorf("%s is not a valid systematik", sys)
@@ -124,6 +135,9 @@ func (mm *MediathekMapper) GetSystematikHierarchy(sys string) (map[string]map[st
 }
 
 func (mm *MediathekMapper) GetSystematik(box string) (sys string, err error) {
+	mm.RLock()
+	defer mm.RUnlock()
+
 	var ok bool
 	sys, ok = mm.boxClass[strings.ToLower(box)]
 	if !ok {
