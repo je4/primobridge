@@ -166,6 +166,9 @@ github.com/gosuri/uiprogress v0.0.1/go.mod h1:C1RTYn4Sc7iEyf6j8ft5dyoZ4212h8G1ol
 github.com/grpc-ecosystem/go-grpc-middleware v1.0.0/go.mod h1:FiyG127CGDf3tlThmgyCl78X/SZQqEOJBCDaAfeWzPs=
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0/go.mod h1:8NvIoxWQoOIhqOTXgfV/d3M/q6VIi02HzZEHgUlZvzk=
 github.com/grpc-ecosystem/grpc-gateway v1.9.0/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
+github.com/gsiems/go-isbn v0.0.0-20180127031122-d51736927d43/go.mod h1:FsPqoorJguTKTgataDIHoWaYTzETdyc5grTh/AXh/us=
+github.com/gsiems/go-marc21 v0.0.0-20200109043943-0b870fe83c91 h1:auTE4aMsORPWGbKxEtI5XkuiUVeqvR/7mcKZ+8SSR3w=
+github.com/gsiems/go-marc21 v0.0.0-20200109043943-0b870fe83c91/go.mod h1:Z6rglDOJHMdozGOT2rwXQgF9SbSJAFCSbLorrXL7W9U=
 github.com/hashicorp/consul/api v1.1.0/go.mod h1:VmuI/Lkw1nC05EYQWNKwWGbkg+FbDBtguAZLlVdkD9Q=
 github.com/hashicorp/consul/sdk v0.1.1/go.mod h1:VKf9jXwCTEY1QZP2MOLRhb5i/I/ssyNV1vwHyQBF0x8=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=

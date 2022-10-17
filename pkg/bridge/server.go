@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	sprig "github.com/Masterminds/sprig/v3"
+	"github.com/bluele/gcache"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	dcert "github.com/je4/utils/v2/pkg/cert"
@@ -37,6 +38,7 @@ type Server struct {
 	staticFS         fs.FS
 	mapper           PrimoMapper
 	dev              bool
+	marcCache        gcache.Cache
 }
 
 func NewServer(service, addr, addrExt, primoSourceData, primoDeepLink string, staticFS, templateFS fs.FS, mapper PrimoMapper, log *logging.Logger, accessLog io.Writer, dev bool) (*Server, error) {
@@ -66,6 +68,7 @@ func NewServer(service, addr, addrExt, primoSourceData, primoDeepLink string, st
 		templates:        map[string]*template.Template{},
 		mapper:           mapper,
 		dev:              dev,
+		marcCache:        gcache.New(128).Expiration(time.Hour * 24).ARC().Build(),
 	}
 
 	return srv, srv.InitTemplates()
@@ -92,6 +95,10 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 
 	router.HandleFunc("/initmapper/hydmUN.DftakhLJDNT_5", s.InitMapperHandler).
 		Methods("GET")
+	router.HandleFunc("/marc21/{docid}", s.Marc21Handler).
+		Methods("GET").
+		Name("marc21")
+
 	router.HandleFunc("/static_images/projects/{project_id}/search_qrcode.png", s.SearchQRCodeHandler).
 		Methods("GET").
 		Queries(
@@ -138,6 +145,7 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 		Name("kisten")
 	router.PathPrefix("/static").Handler(http.StripPrefix("/static", s.httpStaticServer)).Methods("GET")
 
+	router.Use(mux.CORSMethodMiddleware(router))
 	loggedRouter := handlers.CombinedLoggingHandler(s.accessLog, handlers.ProxyHeaders(router))
 	addr := net.JoinHostPort(s.host, s.port)
 	s.srv = &http.Server{

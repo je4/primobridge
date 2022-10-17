@@ -16,6 +16,9 @@ func (s *Server) ViewerHandler(w http.ResponseWriter, r *http.Request) {
 	docID = vars["docID"]
 	barcode = vars["barcode"]
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Max-Age", "86400")
+
 	_, _, box, err := s.mapper.GetData(searchKey)
 	if err != nil {
 		box = "info"

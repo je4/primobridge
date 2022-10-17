@@ -35,22 +35,23 @@
     <main class="px-3">
         <h1>{{$title}}</h1>
         <!-- <p><img src="static/3dthumb/jpg/{{.Box}}.jpg" /></p> -->
-        <!--
         <div class="row">
-            <div class="col-sm-12 col-lg-12 mb-4">
+            <div class="col-sm-12 col-md-8 col-lg-12 mb-4">
                 <div class="card border border-white text-bg-dark mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">da book</h5>
-                        <p class="card-text" style="height: 18em;">
+                        <h5 id="title" class="card-title"></h5>
+                        <p class="card-text">
+                            <span id="authors"></span><br />
+                            <span id="city"></span>: <span id="verlag"></span><br />
+                            <span id="year"></span><br />
                         </p>
                         <p class="card-text"><small class="text-muted">Signatur: {{.Signature}}</small></p>
                     </div>
                 </div>
             </div>
         </div>
-        -->
         <div class="row" data-masonry='{"percentPosition": true }'>
-            <div class="col-sd-12 col-md-8 col-lg-5 col-lg-4 mb-4">
+            <div class="col-sd-12 col-md-8 col-lg-6 col-lg-6 mb-4">
                 <div class="card border border-white text-bg-dark mb-3">
                     <img class="card-img-top" src="static/3dthumb/jpg/{{if ne .Box ""}}{{.Box}}{{else}}info{{end}}.jpg" alt="Card image cap">
                     <div class="card-body">
@@ -60,7 +61,7 @@
             </div>
 
             {{if gt (len $links) 0}}
-                <div class="col-sd-12 col-md-8 col-lg-5 col-lg-4 mb-4">
+                <div class="col-sd-12 col-md-8 col-lg-6 col-lg-6 mb-4">
                     <div class="card border border-white text-bg-dark mb-3">
                         <div class="card-body">
                             <h5 class="card-title">Referenzen</h5>
@@ -79,7 +80,7 @@
                 </div>
             {{end}}
 
-            <div class="col-sd-12 col-md-8 col-lg-5 col-lg-4 mb-4">
+            <div class="col-sd-12 col-md-8 col-lg-6 col-lg-6 mb-4">
                 <div class="card border border-white text-bg-dark mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Themen</h5>
@@ -113,14 +114,40 @@
 <script src="static/js/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
 
 <script>
-    /*
+
     var marcRequest = new XMLHttpRequest();
-    marcRequest.open('GET', 'https://fhnw.swisscovery.slsp.ch/discovery/sourceRecord?vid=41SLSP_FNW%3AVU1&docId=alma{{.DocID}}&recordOwner=41SLSP_NETWORK');
+    marcRequest.open('GET', 'marc21/{{.DocID}}');
     marcRequest.onload = function(){
-        console.log(marcRequest.responseText);
+        let jsonStr = marcRequest.responseText
+        console.log(jsonStr);
+        let book = JSON.parse(jsonStr)
+        console.log(book);
+        let s = document.getElementById("title");
+        s.innerText = book.Title
+        s = document.getElementById("authors");
+        s.innerText = book.Authors
+        s = document.getElementById("city");
+        s.innerText = book.City
+        s = document.getElementById("verlag");
+        s.innerText = book.Verlag
+        s = document.getElementById("year");
+        s.innerText = book.Year
+        /*
+        if(book.ISBN != "" ) {
+            var downloadingImage = new Image();
+            downloadingImage.onload = function(){
+                let s = document.getElementById("title");
+                //let img = document.createElement('img');
+                s.appendChild(downloadingImage)
+
+            };
+            downloadingImage.src = "https://proxy-eu.hosted.exlibrisgroup.com/exl_rewrite/syndetics.com/index.php?client=primo&isbn="+book.ISBN+"/sc.jpg"
+
+        }
+        */
     };
     marcRequest.send();
-    */
+
 </script>
 </body>
 </html>
