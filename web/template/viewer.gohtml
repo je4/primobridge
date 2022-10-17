@@ -35,6 +35,7 @@
     <main class="px-3">
         <h1>{{$title}}</h1>
         <!-- <p><img src="static/3dthumb/jpg/{{.Box}}.jpg" /></p> -->
+        {{if ne .DocID ""}}
         <div class="row">
             <div class="col-sm-12 col-md-8 col-lg-12 mb-4">
                 <div class="card border border-white text-bg-dark mb-3">
@@ -50,6 +51,7 @@
                 </div>
             </div>
         </div>
+        {{end}}
         <div class="row" data-masonry='{"percentPosition": true }'>
             <div class="col-sd-12 col-md-8 col-lg-6 col-lg-6 mb-4">
                 <div class="card border border-white text-bg-dark mb-3">
