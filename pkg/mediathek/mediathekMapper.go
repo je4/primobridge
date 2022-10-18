@@ -112,7 +112,8 @@ func (mm *MediathekMapper) GetSystematikHierarchy(sys string) (map[string]map[st
 	defer mm.RUnlock()
 	result := map[string]map[string]bridge.Class{}
 	if len(sys) < 5 {
-		return nil, errors.Errorf("%s is not a valid systematik", sys)
+		sys = "00-00"
+		//return nil, errors.Errorf("%s is not a valid systematik", sys)
 	}
 	main := sys[0:2]
 	//sub := sys[3:5]

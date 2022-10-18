@@ -33,8 +33,8 @@ func (s *Server) ViewerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	hierarchy, err := s.mapper.GetSystematikHierarchy(systematik)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("cannot get systematik hierarchy: %v", err), http.StatusInternalServerError)
-		return
+		//http.Error(w, fmt.Sprintf("cannot get systematik hierarchy: %v", err), http.StatusInternalServerError)
+		//return
 	}
 
 	if s.dev {

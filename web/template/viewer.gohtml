@@ -46,7 +46,7 @@
                             <span id="city"></span>: <span id="verlag"></span><br />
                             <span id="year"></span><br />
                         </p>
-                        <p class="card-text"><small class="text-muted">Signatur: {{.Signature}}</small></p>
+                        {{if ne .Signature ""}}<p class="card-text"><small class="text-muted">Signatur: {{.Signature}}</small></p>{{end}}
                     </div>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                 <div class="card border border-white text-bg-dark mb-3">
                     <img class="card-img-top" src="static/3dthumb/jpg/{{if ne .Box ""}}{{.Box}}{{else}}info{{end}}.jpg" alt="Card image cap">
                     <div class="card-body">
-                        <h5 class="card-title">{{.Signature}}</h5>
+                        {{if ne .Signature ""}}<h5 class="card-title">{{.Signature}}</h5>{{end}}
                     </div>
                 </div>
             </div>
@@ -114,9 +114,8 @@
 <!-- <iframe src="3d?box={{.Box}}"></iframe>-->
 <script src="static/bootstrap/5.2.0/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
 <script src="static/js/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous" async></script>
-
+{{if ne .DocID ""}}
 <script>
-
     var marcRequest = new XMLHttpRequest();
     marcRequest.open('GET', 'marc21/{{.DocID}}');
     marcRequest.onload = function(){
@@ -149,7 +148,7 @@
         */
     };
     marcRequest.send();
-
 </script>
+{{end}}
 </body>
 </html>
