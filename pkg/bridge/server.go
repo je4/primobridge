@@ -3,13 +3,13 @@ package bridge
 import (
 	"context"
 	"crypto/tls"
+	"emperror.dev/errors"
 	sprig "github.com/Masterminds/sprig/v3"
 	"github.com/bluele/gcache"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	dcert "github.com/je4/utils/v2/pkg/cert"
 	"github.com/op/go-logging"
-	"github.com/pkg/errors"
 	"html/template"
 	"io"
 	"io/fs"
@@ -128,12 +128,28 @@ func (s *Server) ListenAndServe(cert, key string) (err error) {
 			"bcd", "{barcode}",
 		).
 		Name("viewer")
+	router.HandleFunc("/json", s.JSONHandler).
+		Methods("GET").
+		Queries(
+			// "project_id", "{projectID}",
+			"search_key", "{searchKey}",
+			// "language", "{language}",
+			"e", "{docID}",
+			"bcd", "{barcode}",
+		).
+		Name("json")
 	router.HandleFunc("/viewer", s.SystematikHandler).
 		Methods("GET").
 		Queries(
 			"sys", "{systematik}",
 		).
 		Name("viewer")
+	router.HandleFunc("/json", s.JSONSystematikHandler).
+		Methods("GET").
+		Queries(
+			"sys", "{systematik}",
+		).
+		Name("json")
 	router.HandleFunc("/3d", s.ThreeDHandler).
 		Methods("GET").
 		Queries(

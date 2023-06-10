@@ -1,8 +1,8 @@
 package main
 
 import (
+	"emperror.dev/errors"
 	"github.com/BurntSushi/toml"
-	"github.com/pkg/errors"
 	"path/filepath"
 	"strings"
 	"time"

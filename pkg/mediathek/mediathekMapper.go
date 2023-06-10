@@ -2,11 +2,11 @@ package mediathek
 
 import (
 	"database/sql"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/bluele/gcache"
 	"github.com/je4/primobridge/v2/pkg/bridge"
 	"github.com/op/go-logging"
-	"github.com/pkg/errors"
 	"github.com/skip2/go-qrcode"
 	"golang.org/x/exp/slices"
 	"io"
